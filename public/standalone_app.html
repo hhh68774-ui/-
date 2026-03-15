@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق قصر الطهر - النسخة الكاملة</title>
+    
+    <!-- CDNs -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Inter', 'Amiri', serif;
+            background-color: #fffcf9;
+        }
+
+        .amiri { font-family: 'Amiri', serif; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #fff1f2; }
+        ::-webkit-scrollbar-thumb { background: #fb7185; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+        const { motion, AnimatePresence } = window.Motion;
+
+        // --- Icons Component ---
+        const Icon = ({ name, className }) => {
+            useEffect(() => {
+                lucide.createIcons();
+            }, [name]);
+            return <i data-lucide={name} className={className}></i>;
+        };
+
+        // --- Data ---
+        const WINDOWS = [
+            {
+                id: 1,
+                title: "تعريف الحيض وصفاته",
+                icon: "droplets",
+                color: "bg-rose-50",
+                videoUrl: "https://g.top4top.io/m_3721ajvzm1.mp4",
+                content: (
+                    <div className="space-y-6 text-right" dir="rtl">
+                        <div className="bg-gradient-to-br from-rose-600 to-pink-400 p-5 rounded-2xl text-white shadow-lg">
+                            <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+                                <Icon name="info" className="w-5 h-5" />
+                                تعريف الحيض (لغةً وشرعاً)
+                            </h3>
+                            <div className="space-y-3 text-sm leading-relaxed">
+                                <p><span className="font-bold underline">لغةً:</span> الفيض، وقيل السيلان، وقيل الانفجار.</p>
+                                <p><span className="font-bold underline">اصطلاحاً (شرعاً):</span> هو دم جبلة (طبيعي) يخرج من قُبل المرأة في أوقات معلومة.</p>
+                            </div>
+                        </div>
+                        <div className="bg-white p-5 rounded-2xl border border-rose-100 shadow-sm">
+                            <h4 className="font-bold text-rose-800 mb-4 flex items-center gap-2">
+                                <Icon name="sparkles" className="w-5 h-5 text-rose-500" />
+                                صفات دم الحيض الخمس
+                            </h4>
+                            <div className="space-y-3 text-sm">
+                                <p>1. <span className="font-bold">اللون:</span> أسود أو أحمر قانٍ.</p>
+                                <p>2. <span className="font-bold">الثخانة:</span> غليظ ولا يتجمد.</p>
+                                <p>3. <span className="font-bold">الرائحة:</span> كريهة ومميزة.</p>
+                                <p>4. <span className="font-bold">الحرارة:</span> يخرج بحرارة وحرقة.</p>
+                                <p>5. <span className="font-bold">المصدر:</span> من قعر الرحم.</p>
+                            </div>
+                        </div>
+                    </div>
+                )
+            },
+            {
+                id: 2,
+                title: "سن الحيض ومدته",
+                icon: "calendar",
+                color: "bg-amber-50",
+                videoUrl: "https://h.top4top.io/m_3721m9m1c2.mp4",
+                content: (
+                    <div className="space-y-6 text-right" dir="rtl">
+                        <div className="bg-white p-5 rounded-2xl border border-amber-100 shadow-sm">
+                            <h4 className="font-bold text-amber-800 mb-3">سن الحيض ومدته</h4>
+                            <p className="text-sm">البداية: تمام السنة التاسعة هجرية.</p>
+                            <p className="text-sm">أقل الحيض: 3 أيام (72 ساعة).</p>
+                            <p className="text-sm">أكثر الحيض: 10 أيام (240 ساعة).</p>
+                        </div>
+                    </div>
+                )
+            },
+            {
+                id: 3,
+                title: "الانتظار واستقرار العادة",
+                icon: "clock",
+                color: "bg-emerald-50",
+                videoUrl: "https://i.top4top.io/m_3721e5p4u3.mp4",
+                content: (
+                    <div className="space-y-6 text-right" dir="rtl">
+                        <div className="bg-emerald-600 p-5 rounded-2xl text-white">
+                            <h4 className="font-bold mb-2">الانتظار (الاستبراء)</h4>
+                            <p className="text-sm">انتظار الدم: يومين (48 ساعة).</p>
+                            <p className="text-sm">انتظار التوابع: يوماً وليلة (24 ساعة).</p>
+                        </div>
+                    </div>
+                )
+            },
+            {
+                id: 4,
+                title: "التوابع وعلامات الطهر",
+                icon: "sparkles",
+                color: "bg-violet-50",
+                videoUrl: "https://j.top4top.io/m_3721o8ns54.mp4",
+                content: (
+                    <div className="space-y-6 text-right" dir="rtl">
+                        <div className="bg-violet-600 p-5 rounded-2xl text-white">
+                            <h4 className="font-bold mb-2">علامات الطهر</h4>
+                            <p className="text-sm">1. القصة البيضاء: ماء أبيض رقيق.</p>
+                            <p className="text-sm">2. الجفاف: خروج المنديل جافاً تماماً.</p>
+                        </div>
+                    </div>
+                )
+            },
+            {
+                id: 5,
+                title: "الاستحاضة وكيفية الغسل",
+                icon: "info",
+                color: "bg-cyan-50",
+                videoUrl: "https://k.top4top.io/m_3721pa2q25.mp4",
+                content: (
+                    <div className="space-y-6 text-right" dir="rtl">
+                        <div className="bg-cyan-600 p-5 rounded-2xl text-white">
+                            <h4 className="font-bold mb-2">كيفية الغسل</h4>
+                            <p className="text-sm">النية، غسل الموضع، الوضوء، غسل الرأس، تعميم الجسد.</p>
+                        </div>
+                    </div>
+                )
+            }
+        ];
+
+        const QUESTIONS = [
+            {
+                id: 1,
+                text: "بدأ الدم السبت 10ص وانقطع الثلاثاء 9ص. هل هو حيض؟",
+                options: ["نعم", "لا، نقص ساعة", "نعم، العبرة بالأيام", "لا، أقل الحيض 5 أيام"],
+                correctAnswer: 1,
+                explanation: "أقل الحيض 72 ساعة كاملة."
+            },
+            {
+                id: 2,
+                text: "رأت القصة البيضاء ثم رأت كدرة. ما الحكم؟",
+                options: ["تنتظر", "تغتسل ثانية", "لا تلتفت إليها", "تنتظر يومين"],
+                correctAnswer: 2,
+                explanation: "التوابع بعد الطهر اليقيني لا تضر."
+            }
+        ];
+
+        // --- Main App Component ---
+        const App = () => {
+            const [currentView, setCurrentView] = useState('splash');
+            const [selectedWindow, setSelectedWindow] = useState(null);
+            const [quizState, setQuizState] = useState({ active: false, index: 0, score: 0, finished: false });
+
+            useEffect(() => {
+                const timer = setTimeout(() => setCurrentView('home'), 2000);
+                return () => clearTimeout(timer);
+            }, []);
+
+            const handleQuizAnswer = (idx) => {
+                const isCorrect = idx === QUESTIONS[quizState.index].correctAnswer;
+                if (isCorrect) setQuizState(prev => ({ ...prev, score: prev.score + 1 }));
+                
+                if (quizState.index + 1 < QUESTIONS.length) {
+                    setQuizState(prev => ({ ...prev, index: prev.index + 1 }));
+                } else {
+                    setQuizState(prev => ({ ...prev, finished: true }));
+                }
+            };
+
+            if (currentView === 'splash') {
+                return (
+                    <div className="h-screen flex flex-col items-center justify-center bg-gradient-to-br from-rose-500 to-pink-500 text-white">
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-32 h-32 bg-white rounded-full mb-6 flex items-center justify-center shadow-2xl">
+                            <Icon name="sparkles" className="w-16 h-16 text-rose-500" />
+                        </motion.div>
+                        <h1 className="text-3xl font-black amiri">قصر الطهر</h1>
+                        <p className="mt-2 opacity-80">دليلكِ الفقهي بأسلوب عصري</p>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen pb-20">
+                    {/* Header */}
+                    <header className="bg-white/80 backdrop-blur-md border-b border-rose-100 sticky top-0 z-20 px-4 py-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-rose-50 rounded-full flex items-center justify-center">
+                                <Icon name="book-open" className="w-5 h-5 text-rose-600" />
+                            </div>
+                            <h1 className="font-bold text-slate-800">قصر الطهر</h1>
+                        </div>
+                        <button onClick={() => setQuizState({ active: true, index: 0, score: 0, finished: false })} className="bg-rose-500 text-white px-4 py-2 rounded-xl text-xs font-bold">
+                            المسابقة
+                        </button>
+                    </header>
+
+                    <main className="max-w-2xl mx-auto p-4">
+                        <AnimatePresence mode="wait">
+                            {quizState.active ? (
+                                <motion.div key="quiz" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white p-6 rounded-3xl shadow-xl border border-rose-100">
+                                    {!quizState.finished ? (
+                                        <div>
+                                            <div className="flex justify-between items-center mb-6">
+                                                <span className="text-xs font-bold text-rose-500">سؤال {quizState.index + 1} من {QUESTIONS.length}</span>
+                                                <button onClick={() => setQuizState(prev => ({ ...prev, active: false }))} className="text-slate-400"><Icon name="x" className="w-5 h-5" /></button>
+                                            </div>
+                                            <h3 className="text-lg font-bold mb-6 text-right">{QUESTIONS[quizState.index].text}</h3>
+                                            <div className="space-y-3">
+                                                {QUESTIONS[quizState.index].options.map((opt, i) => (
+                                                    <button key={i} onClick={() => handleQuizAnswer(i)} className="w-full p-4 text-right bg-rose-50 hover:bg-rose-100 rounded-2xl transition-all font-medium">
+                                                        {opt}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-10">
+                                            <Icon name="award" className="w-20 h-20 text-yellow-500 mx-auto mb-4" />
+                                            <h2 className="text-2xl font-bold mb-2">أحسنتِ!</h2>
+                                            <p className="text-slate-500 mb-6">لقد حصلتِ على {quizState.score} من {QUESTIONS.length}</p>
+                                            <button onClick={() => setQuizState({ active: false, index: 0, score: 0, finished: false })} className="bg-rose-500 text-white px-8 py-3 rounded-2xl font-bold">العودة للرئيسية</button>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            ) : selectedWindow ? (
+                                <motion.div key="window" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                                    <button onClick={() => setSelectedWindow(null)} className="flex items-center gap-2 text-rose-600 font-bold mb-4">
+                                        <Icon name="chevron-right" className="w-5 h-5" /> العودة
+                                    </button>
+                                    <h2 className="text-2xl font-black text-slate-800 text-right">{selectedWindow.title}</h2>
+                                    {selectedWindow.videoUrl && (
+                                        <div className="rounded-3xl overflow-hidden shadow-lg bg-black aspect-video">
+                                            <video src={selectedWindow.videoUrl} controls className="w-full h-full" />
+                                        </div>
+                                    )}
+                                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-rose-50">
+                                        {selectedWindow.content}
+                                    </div>
+                                </motion.div>
+                            ) : (
+                                <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                                    <div className="bg-gradient-to-r from-rose-500 to-pink-500 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
+                                        <div className="relative z-10">
+                                            <h2 className="text-2xl font-black mb-2">مرحباً بكِ في قصر الطهر</h2>
+                                            <p className="text-sm opacity-90">رحلة تعليمية ممتعة لفهم أحكام الحيض</p>
+                                        </div>
+                                        <Icon name="sparkles" className="absolute -right-4 -bottom-4 w-32 h-32 opacity-20 rotate-12" />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {WINDOWS.map(win => (
+                                            <button key={win.id} onClick={() => setSelectedWindow(win)} className={`${win.color} p-6 rounded-3xl border border-white shadow-sm hover:shadow-md transition-all flex items-center justify-between group`}>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm">
+                                                        <Icon name={win.icon} className="w-6 h-6 text-rose-500" />
+                                                    </div>
+                                                    <span className="font-bold text-slate-700">{win.title}</span>
+                                                </div>
+                                                <Icon name="chevron-left" className="w-5 h-5 text-slate-400 group-hover:translate-x-[-4px] transition-transform" />
+                                            </button>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </main>
+
+                    {/* Footer Navigation */}
+                    {!quizState.active && (
+                        <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-rose-100 px-6 py-3 flex justify-around items-center z-30">
+                            <button onClick={() => { setSelectedWindow(null); setQuizState(prev => ({ ...prev, active: false })); }} className="flex flex-col items-center gap-1 text-rose-500">
+                                <Icon name="home" className="w-6 h-6" />
+                                <span className="text-[10px] font-bold">الرئيسية</span>
+                            </button>
+                            <button onClick={() => setQuizState({ active: true, index: 0, score: 0, finished: false })} className="flex flex-col items-center gap-1 text-slate-400">
+                                <Icon name="help-circle" className="w-6 h-6" />
+                                <span className="text-[10px] font-bold">المسابقة</span>
+                            </button>
+                        </nav>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
