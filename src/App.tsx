@@ -604,6 +604,175 @@ const QUESTIONS: Question[] = [
   }
 ];
 
+const MenstrualCalculator = ({ onBack }: { onBack: () => void }) => {
+  const [startDate, setStartDate] = useState('');
+  const [startTime, setStartTime] = useState('10:00');
+  const [endDate, setEndDate] = useState('');
+  const [endTime, setEndTime] = useState('10:00');
+  const [habitDays, setHabitDays] = useState('7');
+  const [isStillBleeding, setIsStillBleeding] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const [result, setResult] = useState<{ status: string, message: string, color: string }>({ status: '', message: '', color: '' });
+
+  const calculate = () => {
+    if (!startDate || (!isStillBleeding && !endDate)) return;
+
+    const start = new Date(`${startDate}T${startTime}`);
+    const end = isStillBleeding ? new Date() : new Date(`${endDate}T${endTime}`);
+    
+    const diffMs = end.getTime() - start.getTime();
+    const diffHours = diffMs / (1000 * 60 * 60);
+    const habitHours = parseInt(habitDays) * 24;
+
+    let status = "";
+    let message = "";
+    let color = "bg-rose-50 border-rose-200 text-rose-800";
+
+    if (diffHours < 0) {
+      status = "خطأ في التواريخ";
+      message = "تاريخ النهاية يجب أن يكون بعد تاريخ البداية.";
+      color = "bg-red-50 border-red-200 text-red-800";
+    } else if (diffHours < 72) {
+      status = "استحاضة (دم علة)";
+      message = `مدة الدم (${Math.floor(diffHours)} ساعة) أقل من 72 ساعة (3 أيام بلياليها). هذا الدم لا يعتبر حيضاً شرعاً، ويجب عليكِ قضاء الصلوات التي تركتِها.`;
+      color = "bg-amber-50 border-amber-200 text-amber-800";
+    } else if (diffHours > 240) {
+      status = "تجاوز أكثر الحيض";
+      message = `مدة الدم تجاوزت 10 أيام (240 ساعة). أول 240 ساعة تعتبر حيضاً، وما زاد عنها يعتبر استحاضة. يجب عليكِ الاغتسال بعد تمام الـ 10 أيام والصلاة حتى لو استمر الدم.`;
+      color = "bg-orange-50 border-orange-200 text-orange-800";
+    } else {
+      // Normal range 3-10 days
+      if (isStillBleeding) {
+        status = "أنتِ في فترة حيض";
+        message = `لقد مضى على بدئه ${Math.floor(diffHours / 24)} أيام و ${Math.floor(diffHours % 24)} ساعة. استمري في مراقبة علامات الطهر.`;
+        color = "bg-rose-50 border-rose-200 text-rose-800";
+      } else {
+        if (diffHours < habitHours) {
+          status = "فترة انتظار (استبراء)";
+          message = `انقطع الدم قبل تمام عادتكِ (${habitDays} أيام). يجب عليكِ الانتظار لمدة يومين (48 ساعة) للتأكد من انقطاعه تماماً، ما لم يتجاوز المجموع 10 أيام.`;
+          color = "bg-emerald-50 border-emerald-200 text-emerald-800";
+        } else {
+          status = "طهر محتمل";
+          message = `لقد أتممتِ عادتكِ أو تجاوزتِها. إذا رأيتِ القصة البيضاء أو الجفاف التام، فاغتسلي وصلي فوراً.`;
+          color = "bg-violet-50 border-violet-200 text-violet-800";
+        }
+      }
+    }
+
+    setResult({ status, message, color });
+    setShowResult(true);
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-3xl shadow-2xl border border-rose-100 overflow-hidden"
+    >
+      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 p-6 text-white flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Clock className="w-6 h-6" />
+          <h2 className="font-black text-lg">حاسبة الدورة الشهرية</h2>
+        </div>
+        <button onClick={onBack} className="p-2 hover:bg-white/20 rounded-full transition-colors">
+          <Home className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="p-6 space-y-6 text-right" dir="rtl">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">وقت بدء نزول الدم:</label>
+            <div className="grid grid-cols-2 gap-2">
+              <input 
+                type="date" 
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm focus:border-indigo-300 outline-none"
+              />
+              <input 
+                type="time" 
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm focus:border-indigo-300 outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+            <input 
+              type="checkbox" 
+              id="stillBleeding"
+              checked={isStillBleeding}
+              onChange={(e) => setIsStillBleeding(e.target.checked)}
+              className="w-5 h-5 accent-indigo-600"
+            />
+            <label htmlFor="stillBleeding" className="text-sm font-bold text-slate-700">ما زال الدم مستمراً</label>
+          </div>
+
+          {!isStillBleeding && (
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">وقت انقطاع الدم:</label>
+              <div className="grid grid-cols-2 gap-2">
+                <input 
+                  type="date" 
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm focus:border-indigo-300 outline-none"
+                />
+                <input 
+                  type="time" 
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm focus:border-indigo-300 outline-none"
+                />
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">عادتكِ المعتادة (بالأيام):</label>
+            <input 
+              type="number" 
+              value={habitDays}
+              onChange={(e) => setHabitDays(e.target.value)}
+              className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm focus:border-indigo-300 outline-none"
+              min="3"
+              max="10"
+            />
+          </div>
+        </div>
+
+        <button 
+          onClick={calculate}
+          className="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all transform hover:-translate-y-1"
+        >
+          حساب النتيجة الشرعية
+        </button>
+
+        <AnimatePresence>
+          {showResult && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className={`p-5 rounded-2xl border-2 ${result.color} space-y-2`}
+            >
+              <h3 className="font-black text-lg flex items-center gap-2">
+                <Sparkles className="w-5 h-5" />
+                {result.status}
+              </h3>
+              <p className="text-sm leading-relaxed">{result.message}</p>
+              <div className="pt-2 text-[10px] opacity-70">
+                * هذه النتيجة مبنية على القواعد الفقهية العامة، استشيري والدتكِ أو معلمتكِ في الحالات المعقدة.
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+};
+
 // --- Components ---
 
 const SallyCharacter = ({ message, size = "md", customImage, isSpeaking = false }: { message?: string, size?: "sm" | "md", customImage?: string, isSpeaking?: boolean }) => (
@@ -759,7 +928,7 @@ export default function App() {
   const [detectedName, setDetectedName] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginError, setLoginError] = useState(false);
-  const [currentView, setCurrentView] = useState<'home' | 'window' | 'quiz' | 'result' | 'chat' | 'videos'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'window' | 'quiz' | 'result' | 'chat' | 'calculator'>('home');
   const [activeWindow, setActiveWindow] = useState<WindowContent | null>(null);
   const [quizStep, setQuizStep] = useState(0);
   const [score, setScore] = useState(0);
@@ -925,11 +1094,11 @@ export default function App() {
                     اسألي سالي (ذكاء اصطناعي)
                   </button>
                   <button
-                    onClick={() => setCurrentView('videos')}
-                    className="flex items-center gap-2 bg-white border-2 border-rose-100 px-6 py-3 rounded-2xl text-rose-600 font-bold text-sm shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1"
+                    onClick={() => setCurrentView('calculator')}
+                    className="flex items-center gap-2 bg-white border-2 border-indigo-100 px-6 py-3 rounded-2xl text-indigo-600 font-bold text-sm shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1"
                   >
-                    <Camera className="w-5 h-5" />
-                    مكتبة الفيديوهات
+                    <Clock className="w-5 h-5" />
+                    حاسبة الدورة
                   </button>
                 </div>
               </div>
@@ -1085,59 +1254,8 @@ export default function App() {
             </motion.div>
           )}
 
-          {currentView === 'videos' && (
-            <motion.div 
-              key="videos"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="space-y-6"
-            >
-              <div className="bg-white p-6 rounded-3xl shadow-xl border border-rose-100">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
-                    <Camera className="w-6 h-6 text-rose-500" />
-                    مكتبة روابط الفيديوهات
-                  </h2>
-                  <button onClick={() => setCurrentView('home')} className="p-2 hover:bg-rose-50 rounded-full">
-                    <Home className="w-5 h-5 text-slate-400" />
-                  </button>
-                </div>
-                
-                <div className="space-y-4">
-                  {WINDOWS.map((win) => (
-                    <div key={win.id} className="p-4 bg-rose-50/50 rounded-2xl border border-rose-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                          {win.icon}
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-sm text-slate-800">{win.title}</h3>
-                          <p className="text-[10px] text-slate-500">النافذة {win.id}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <a 
-                          href={win.videoUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white border border-rose-200 text-rose-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-rose-500 hover:text-white transition-all"
-                        >
-                          <Download className="w-4 h-4" />
-                          رابط الفيديو
-                        </a>
-                        <button 
-                          onClick={() => handleWindowOpen(win)}
-                          className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-rose-500 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-rose-600 transition-all"
-                        >
-                          مشاهدة الآن
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
+          {currentView === 'calculator' && (
+            <MenstrualCalculator onBack={() => setCurrentView('home')} />
           )}
 
           {currentView === 'chat' && (
@@ -1205,11 +1323,11 @@ export default function App() {
             <span className="text-[10px] font-bold">اسألي سالي</span>
           </button>
           <button 
-            onClick={() => setCurrentView('videos')}
-            className={`flex flex-col items-center gap-1 ${currentView === 'videos' ? 'text-rose-600' : 'text-slate-400'}`}
+            onClick={() => setCurrentView('calculator')}
+            className={`flex flex-col items-center gap-1 ${currentView === 'calculator' ? 'text-indigo-600' : 'text-slate-400'}`}
           >
-            <Camera className="w-6 h-6" />
-            <span className="text-[10px] font-bold">الفيديوهات</span>
+            <Clock className="w-6 h-6" />
+            <span className="text-[10px] font-bold">الحاسبة</span>
           </button>
           <button 
             onClick={() => setCurrentView('quiz')}
