@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق قصر الطهر - النسخة الكاملة</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&display=swap');
+        body { font-family: 'Cairo', sans-serif; background-color: #fffafb; margin: 0; padding: 0; }
+        .amiri { font-family: 'Amiri', serif; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #f43f5e; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { motion, AnimatePresence } = window.Motion;
+
+        const Icon = ({ name, className }) => {
+            useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [name]);
+            return <i data-lucide={name} className={className}></i>;
+        };
+
+        // قاعدة بيانات الطالبات (أمثلة)
+        const STUDENTS = {
+            "058720160019": "أريج بنت حمود بن حمدون حميد الحبسية",
+            "056420160021": "أسماء بنت محمد بن سالم راشد الحبسية",
+            "632120180015": "يقين بنت سعود بن عبدالله سالم المنذرية",
+            "632420180052": "تسنيم بنت سيف بن سعيد علي الجابرية"
+        };
+
+        const APP_DATA = {
+            windows: [
+                { id: 1, title: "تعريف الحيض وصفاته", icon: "droplets", color: "bg-rose-50", videoUrl: "https://g.top4top.io/m_3721ajvzm1.mp4", sections: [{ title: "تعريف الحيض", content: "دم طبيعي يخرج من رحم المرأة في أوقات معلومة." }] },
+                { id: 2, title: "سن الحيض ومدته", icon: "calendar", color: "bg-amber-50", videoUrl: "https://h.top4top.io/m_3721m9m1c2.mp4", sections: [{ title: "المدة", content: "أقل الحيض 3 أيام وأكثره 10 أيام." }] }
+            ],
+            questions: [
+                { text: "ما هو أقل مدة للحيض بالساعات؟", options: ["24 ساعة", "48 ساعة", "72 ساعة"], correct: 2 }
+            ]
+        };
+
+        const App = () => {
+            const [isLoggedIn, setIsLoggedIn] = useState(false);
+            const [schoolId, setSchoolId] = useState('');
+            const [studentName, setStudentName] = useState('');
+            const [view, setView] = useState('home');
+            const [selected, setSelected] = useState(null);
+            const [quiz, setQuiz] = useState({ index: 0, score: 0, done: false });
+
+            const handleLogin = (e) => {
+                e.preventDefault();
+                const name = STUDENTS[schoolId.trim()];
+                if (name) {
+                    setStudentName(name);
+                    setIsLoggedIn(true);
+                } else {
+                    alert("الرقم المدرسي غير صحيح!");
+                }
+            };
+
+            if (!isLoggedIn) {
+                return (
+                    <div className="h-screen flex items-center justify-center p-4 bg-rose-50">
+                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-md text-center">
+                            <Icon name="sparkles" className="w-16 h-16 text-rose-500 mx-auto mb-6" />
+                            <h1 className="text-3xl font-black text-rose-600 mb-2">قصر الطهر</h1>
+                            <p className="text-slate-500 mb-8">أدخلي رقمكِ المدرسي للبدء</p>
+                            <form onSubmit={handleLogin} className="space-y-4">
+                                <input 
+                                    type="text" 
+                                    placeholder="الرقم المدرسي" 
+                                    className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-center font-bold outline-none focus:border-rose-400 transition-all"
+                                    value={schoolId}
+                                    onChange={(e) => setSchoolId(e.target.value)}
+                                    required
+                                />
+                                <button type="submit" className="w-full bg-rose-500 text-white py-4 rounded-2xl font-bold shadow-lg">دخول</button>
+                            </form>
+                        </motion.div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="max-w-md mx-auto min-h-screen bg-white shadow-2xl flex flex-col">
+                    <header className="p-5 bg-rose-500 text-white flex justify-between items-center">
+                        <div>
+                            <h1 className="font-bold">قصر الطهر</h1>
+                            <p className="text-[10px] opacity-80">مرحباً بكِ، {studentName.split(' ')[0]}</p>
+                        </div>
+                        <button onClick={() => setIsLoggedIn(false)}><Icon name="log-out" className="w-5 h-5" /></button>
+                    </header>
+                    <main className="p-5 flex-1">
+                        {/* محتوى التطبيق كما في الرد السابق */}
+                        <div className="bg-rose-500 p-8 rounded-[2rem] text-white mb-6">
+                            <h2 className="text-xl font-bold">جاهزة للتعلم؟</h2>
+                            <p className="text-xs opacity-90">اختاري نافذة لتبدئي رحلتكِ</p>
+                        </div>
+                        <div className="grid gap-4">
+                            {APP_DATA.windows.map(w => (
+                                <button key={w.id} onClick={() => setSelected(w)} className="p-6 bg-rose-50 rounded-3xl flex justify-between items-center">
+                                    <span className="font-bold">{w.title}</span>
+                                    <Icon name="chevron-left" className="w-5 h-5 text-rose-400" />
+                                </button>
+                            ))}
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
